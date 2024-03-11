@@ -24,12 +24,13 @@ class MainActivity : AppCompatActivity() , OnClickListener {
         binding= ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         binding.btncamara.setOnClickListener(this)
+        binding.btncompartir.setOnClickListener(this)
     }
 
     override fun onClick(v: View) {
         when(v.id){
             R.id.btncamara-> Tomarfoto()
-            R.id.btncamara-> ConpartirFoto()
+            R.id.btncompartir-> ConpartirFoto()
 
 
         }
@@ -37,6 +38,25 @@ class MainActivity : AppCompatActivity() , OnClickListener {
     }
 
     private fun ConpartirFoto() {
+        if (rutafotoactual !="" ){
+            val fotoUri=obtenerContenidoUri(File(rutafotoactual))
+            val intentImage = Intent().apply {
+                action=Intent.ACTION_SEND
+                putExtra(Intent.EXTRA_STREAM,fotoUri)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                type="image/jpeg"
+            }
+            val chooser=Intent.createChooser(intentImage,"conpartir foto")
+            if (intentImage.resolveActivity(packageManager) !=null){
+                startActivity(chooser)
+            }
+        }
+
+    }
+
+    private fun obtenerContenidoUri(archivoFto: File): Uri {
+        return FileProvider.getUriForFile(
+                applicationContext,"com.example.appcamara.fileprovider",archivoFto)
 
     }
 
@@ -46,9 +66,13 @@ class MainActivity : AppCompatActivity() , OnClickListener {
                     componente->
                 creararchivofoto()
                 val fotoUri: Uri=
+                obtenerContenidoUri(file)
+                /*
                     FileProvider.getUriForFile(
                         applicationContext,"com.example.appcamara.fileprovider",file
                     )
+                    */
+
                 it.putExtra(MediaStore.EXTRA_OUTPUT,fotoUri)
             }
         }
@@ -75,5 +99,6 @@ class MainActivity : AppCompatActivity() , OnClickListener {
         file = File.createTempFile("IMG_${System.currentTimeMillis()}_", ".jpg",directorioImg)
         rutafotoactual=file.absolutePath
     }
+
 
 }
